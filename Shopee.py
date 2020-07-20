@@ -34,9 +34,9 @@ WebDriverWait(driver, 20).until(EC.element_to_be_clickable(
 while True:
 
     # automatic scroll page to bottom-down
-    ct_page = 0
+    ct_page = 8
 
-    while ct_page <= 8:
+    for _ in range(ct_page):
         last_height = driver.execute_script("return document.body.scrollHeight")
         driver.execute_script("window.scrollTo(0, window.scrollY + 500);")
         time.sleep(scroll_pause_time)
@@ -46,8 +46,6 @@ while True:
             driver.execute_script("window.scrollTo(0, window.scrollY + 500);")
             time.sleep(scroll_pause_time)
             new_height = driver.execute_script("return document.body.scrollHeight")
-        
-        ct_page += 1
 
     # convert collected html to BS.
     full_html = BeautifulSoup(driver.page_source, 'html.parser')
@@ -74,10 +72,7 @@ while True:
         temp = []
         for __ in list_price:
             temp.append(__.text)
-        if len(temp) == 2:
-            new_string = temp[0]+'-'+temp[1]
-        else:
-            new_string = temp[0]
+        new_string = temp[0]+'-'+temp[1] if len(temp) == 2 else temp[0]
         price_list.append(new_string)
 
     # get text sold
@@ -85,10 +80,7 @@ while True:
         new_string = _.text
         index = new_string.find('k')
         # fix of unknown sold
-        if index == -1:
-            new_string = 0
-        else:
-            new_string = float(new_string[:index]) * 1000
+        new_string = 0 if index == -1 else (float(new_string[:index]) * 1000)
         sold_list.append(new_string)
 
     # automatic next page
@@ -105,7 +97,7 @@ for _ in range(len(title_list)):
     print(price_list[_])
     print(sold_list[_])
 
-DF = pd.DataFrame({'สินค้า': title_list, 'ราคาสินค้า(บาท)': price_list, 'ยอดการขาย(บาท)': sold_list})
+DF = pd.DataFrame({'สินค้า': title_list, 'ราคาสินค้า(บาท)': price_list, 'ยอดการขาย(ชิ้น)': sold_list})
 DF.to_excel('Ploy.xlsx', encoding="utf-8-sig", header=True)
 
 driver.implicitly_wait(5)
